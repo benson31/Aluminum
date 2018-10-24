@@ -107,8 +107,8 @@ void ProgressEngine::wait_for_completion(AlRequest& req) {
   req = NULL_REQUEST;
 }
 
-#define CHECK_HWLOC (cmd)                                     \
-    if (cmd != 0) {                                           \
+#define CHECK_HWLOC(cmd)                                                \
+    if (cmd != 0) {                                                     \
         throw_al_exception("HWLOC command \"" #cmd "\" failed.");       \
     }
 
