@@ -107,11 +107,16 @@ void ProgressEngine::wait_for_completion(AlRequest& req) {
   req = NULL_REQUEST;
 }
 
+#define CHECK_HWLOC (cmd)                                     \
+    if (cmd != 0) {                                           \
+        throw_al_exception("HWLOC command \"" #cmd "\" failed.");       \
+    }
+
 void ProgressEngine::bind() {
   // Determine topology information.
   hwloc_topology_t topo;
-  hwloc_topology_init(&topo);
-  hwloc_topology_load(topo);
+  CHECK_HWLOC(hwloc_topology_init(&topo));
+  CHECK_HWLOC(hwloc_topology_load(topo));
   // Determine how many NUMA nodes there are.
   int num_numa_nodes = hwloc_get_nbobjs_by_type(topo, HWLOC_OBJ_NUMANODE);
   if (num_numa_nodes == -1) {
@@ -119,10 +124,10 @@ void ProgressEngine::bind() {
   }
   // Determine the NUMA node we're currently on.
   hwloc_cpuset_t cpuset = hwloc_bitmap_alloc();
-  hwloc_get_cpubind(topo, cpuset, 0);
+  CHECK_HWLOC(hwloc_get_cpubind(topo, cpuset, 0));
   hwloc_nodeset_t nodeset = hwloc_bitmap_alloc();
-  hwloc_cpuset_to_nodeset(topo, cpuset, nodeset);
-  hwloc_bitmap_singlify(nodeset);
+  CHECK_HWLOC(hwloc_cpuset_to_nodeset(topo, cpuset, nodeset));
+  CHECK_HWLOC(hwloc_bitmap_singlify(nodeset));
   hwloc_obj_t numa_node = hwloc_get_numanode_obj_by_os_index(
     topo, hwloc_bitmap_first(nodeset));
   if (numa_node == NULL) {
@@ -166,7 +171,7 @@ void ProgressEngine::bind() {
     throw_al_exception("Could not get core.");
   }
   hwloc_cpuset_t coreset = hwloc_bitmap_dup(core->cpuset);
-  hwloc_bitmap_singlify(coreset);
+  CHECK_HWLOC(hwloc_bitmap_singlify(coreset));
   if (hwloc_set_cpubind(topo, coreset, HWLOC_CPUBIND_THREAD) == -1) {
     throw_al_exception("Cannot bind progress engine");
   }
