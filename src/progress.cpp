@@ -126,8 +126,8 @@ void ProgressEngine::bind() {
   hwloc_cpuset_t cpuset = hwloc_bitmap_alloc();
   CHECK_HWLOC(hwloc_get_cpubind(topo, cpuset, 0));
   hwloc_nodeset_t nodeset = hwloc_bitmap_alloc();
-  CHECK_HWLOC(hwloc_cpuset_to_nodeset(topo, cpuset, nodeset));
-  CHECK_HWLOC(hwloc_bitmap_singlify(nodeset));
+  hwloc_cpuset_to_nodeset(topo, cpuset, nodeset);
+  hwloc_bitmap_singlify(nodeset);
   hwloc_obj_t numa_node = hwloc_get_numanode_obj_by_os_index(
     topo, hwloc_bitmap_first(nodeset));
   if (numa_node == NULL) {
@@ -171,7 +171,7 @@ void ProgressEngine::bind() {
     throw_al_exception("Could not get core.");
   }
   hwloc_cpuset_t coreset = hwloc_bitmap_dup(core->cpuset);
-  CHECK_HWLOC(hwloc_bitmap_singlify(coreset));
+  hwloc_bitmap_singlify(coreset);
   if (hwloc_set_cpubind(topo, coreset, HWLOC_CPUBIND_THREAD) == -1) {
     throw_al_exception("Cannot bind progress engine");
   }
